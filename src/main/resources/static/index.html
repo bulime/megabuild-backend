@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="pageTitle">MegaBuild - Vật liệu xây dựng</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body { font-family: Inter, sans-serif; }
+        .modal-hidden { display: none !important; }
+        .product-card { transition: transform .2s, box-shadow .2s; }
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, .10);
+        }
+        #cartModal { transition: opacity .2s; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+<!-- TOP BAR -->
+<div class="bg-slate-900 px-4 py-2 text-xs text-slate-200">
+    <div class="mx-auto flex max-w-7xl flex-col justify-between gap-2 sm:flex-row">
+        <div class="flex flex-wrap items-center gap-4">
+            <span><i class="fa-solid fa-phone text-red-500 mr-1"></i> Hotline: 1900 8888</span>
+            <span class="hidden md:inline">Giao hàng tận công trình 24/7</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <a href="#stores" class="hover:text-white">Hệ thống chi nhánh</a>
+            <a href="#support" class="hover:text-white">Hỗ trợ kỹ thuật</a>
+            <select id="langSelector" onchange="changeLanguage(this.value)"
+                    class="rounded bg-slate-800 px-2 py-1 text-white">
+                <option value="vi">🇻🇳 Tiếng Việt</option>
+                <option value="en">🇬🇧 English</option>
+                <option value="zh">🇨🇳 中文</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex min-h-20 items-center justify-between gap-3 py-3">
+            <a href="/index.html" class="flex shrink-0 items-center gap-3">
+                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg">
+                    <i class="fa-solid fa-helmet-safety text-2xl"></i>
+                </div>
+                <div>
+                    <div class="text-xl font-black tracking-tight text-slate-900">
+                        MEGA<span class="text-red-600">BUILD</span>
+                    </div>
+                    <div class="hidden text-[9px] font-bold uppercase tracking-widest text-slate-400 sm:block">
+                        Vật liệu & Thiết bị xây dựng
+                    </div>
+                </div>
+            </a>
+
+            <div class="hidden max-w-2xl flex-1 md:block">
+                <div class="relative">
+                    <input id="searchInput" type="search"
+                           placeholder="Tìm máy khoan, thép, xi măng..."
+                           class="w-full rounded-xl border border-slate-200 bg-slate-100 py-3 pl-11 pr-24 text-sm outline-none focus:border-red-500 focus:bg-white">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <button type="button" onclick="handleSearch()"
+                            class="absolute right-1 top-1 bottom-1 rounded-lg bg-red-600 px-4 text-xs font-bold text-white hover:bg-red-700">
+                        Tìm kiếm
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex shrink-0 items-center gap-2">
+                <button type="button" onclick="openAiConsultant()"
+                        class="hidden rounded-xl bg-amber-500 px-3 py-3 text-sm font-bold text-white hover:bg-amber-600 xl:block">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI tư vấn
+                </button>
+
+                <div id="accountContainer" class="relative">
+                    <button type="button" id="accountButton"
+                            onclick="handleAccountClick()"
+                            class="flex items-center gap-2 rounded-xl p-2 hover:bg-slate-100">
+                        <i class="fa-regular fa-user text-xl"></i>
+                        <span id="accountLoginText" class="hidden text-xs font-bold sm:block">Đăng nhập</span>
+                    </button>
+
+                    <div id="accountDropdown"
+                         class="absolute right-0 top-full z-[200] mt-2 hidden w-64 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-xl">
+                        <div class="bg-slate-50 p-4">
+                            <p id="dropdownUserName" class="truncate font-bold">Người dùng</p>
+                            <p id="dropdownUserEmail" class="truncate text-xs text-slate-500"></p>
+                        </div>
+                        <a href="/account.html" class="block px-4 py-3 text-sm hover:bg-slate-50">
+                            <i class="fa-regular fa-user mr-2"></i>Thông tin tài khoản
+                        </a>
+                        <button type="button" id="logoutButton"
+                                class="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50">
+                            <i class="fa-solid fa-right-from-bracket mr-2"></i>Đăng xuất
+                        </button>
+                    </div>
+                </div>
+
+                <button type="button" onclick="toggleCart()"
+                        class="relative flex items-center gap-2 rounded-xl bg-slate-100 p-3 hover:bg-red-50 hover:text-red-600">
+                    <i class="fa-solid fa-cart-shopping text-lg"></i>
+                    <span class="hidden text-xs font-bold sm:inline">Giỏ hàng</span>
+                    <span id="cartBadge"
+                          class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">0</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="pb-3 md:hidden">
+            <div class="relative">
+                <input id="mobileSearchInput" type="search"
+                       placeholder="Tìm kiếm sản phẩm..."
+                       class="w-full rounded-xl border border-slate-200 bg-slate-100 py-3 pl-10 pr-20 text-sm outline-none focus:border-red-500">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <button type="button" onclick="handleSearch()"
+                        class="absolute right-1 top-1 bottom-1 rounded-lg bg-red-600 px-3 text-xs font-bold text-white">
+                    Tìm
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CATEGORY NAVIGATION -->
+    <div class="bg-slate-900 text-white">
+        <nav class="no-scrollbar mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6 lg:px-8">
+            <button type="button" onclick="filterCategory('all')"
+                    class="cat-btn whitespace-nowrap rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold">
+                Tất cả
+            </button>
+            <button type="button" onclick="filterCategory('machines')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Máy móc & Thiết bị
+            </button>
+            <button type="button" onclick="filterCategory('steel')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Thép & Kim loại
+            </button>
+            <button type="button" onclick="filterCategory('wood')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Gỗ & Ván ép
+            </button>
+            <button type="button" onclick="filterCategory('paint')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Sơn & Hóa chất
+            </button>
+            <button type="button" onclick="filterCategory('electrical')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Thiết bị điện
+            </button>
+            <button type="button" onclick="filterCategory('plumbing')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Ống nước
+            </button>
+            <button type="button" onclick="filterCategory('cement')"
+                    class="cat-btn whitespace-nowrap rounded-lg px-4 py-2 text-sm hover:bg-slate-800">
+                Xi măng & Gạch
+            </button>
+        </nav>
+    </div>
+</header>
+
+<!-- HERO -->
+<section class="mx-auto max-w-7xl px-4 pt-6 sm:px-6 lg:px-8">
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-950 via-slate-800 to-red-900 px-6 py-10 text-white shadow-xl sm:px-12 sm:py-14">
+        <div class="absolute inset-0 bg-cover bg-center opacity-20"
+             style="background-image:url('https://images.unsplash.com/photo-1541888946425-d0fbb18f2496?auto=format&fit=crop&w=1400&q=80')"></div>
+        <div class="relative z-10 max-w-2xl">
+            <span class="rounded-full bg-red-600 px-3 py-1 text-xs font-bold uppercase">
+                MegaBuild Việt Nam
+            </span>
+            <h1 class="mt-5 text-3xl font-black leading-tight sm:text-5xl">
+                Giải Pháp Toàn Diện Cho Mọi Công Trình
+            </h1>
+            <p class="mt-4 max-w-xl text-sm leading-6 text-slate-200 sm:text-base">
+                Cung cấp máy móc, sắt thép, xi măng, sơn và thiết bị xây dựng cho mọi công trình.
+            </p>
+            <div class="mt-6 flex flex-wrap gap-3">
+                <button type="button" onclick="filterCategory('machines')"
+                        class="rounded-xl bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700">
+                    <i class="fa-solid fa-screwdriver-wrench mr-2"></i>Xem sản phẩm
+                </button>
+                <button type="button" onclick="openAiConsultant()"
+                        class="rounded-xl bg-amber-500 px-5 py-3 text-sm font-bold text-white hover:bg-amber-600">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i>AI tư vấn xây nhà
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- MAIN CONTENT -->
+<main class="mx-auto my-10 max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+
+        <!-- SIDEBAR FILTERS -->
+        <aside class="space-y-6">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+                <h2 class="mb-5 flex items-center justify-between font-bold text-slate-900">
+                    Bộ lọc sản phẩm
+                    <i class="fa-solid fa-filter text-red-600"></i>
+                </h2>
+
+                <div class="mb-5">
+                    <label for="subCategoryFilters" class="mb-2 block text-sm font-semibold">
+                        Danh mục chi tiết
+                    </label>
+                    <div id="subCategoryFilters" class="space-y-2 text-sm">
+                        <p class="text-xs text-slate-400">Chọn danh mục để lọc sản phẩm.</p>
+                    </div>
+                </div>
+
+                <hr class="my-5 border-slate-100">
+
+                <div class="mb-5">
+                    <label class="mb-2 block text-sm font-semibold">Khoảng giá (VNĐ)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <input id="minPrice" type="number" min="0" placeholder="Từ"
+                               class="min-w-0 rounded-lg border border-slate-200 p-2 text-sm outline-none focus:border-red-500">
+                        <input id="maxPrice" type="number" min="0" placeholder="Đến"
+                               class="min-w-0 rounded-lg border border-slate-200 p-2 text-sm outline-none focus:border-red-500">
+                    </div>
+                    <button type="button" onclick="applyPriceFilter()"
+                            class="mt-3 w-full rounded-lg bg-slate-100 py-2 text-sm font-semibold hover:bg-slate-200">
+                        Áp dụng giá
+                    </button>
+                </div>
+
+                <hr class="my-5 border-slate-100">
+
+                <div>
+                    <label class="mb-2 block text-sm font-semibold">Thương hiệu</label>
+                    <div id="brandFilters" class="max-h-48 space-y-2 overflow-y-auto text-sm">
+                        <p class="text-xs text-slate-400">Danh sách thương hiệu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-2xl bg-slate-900 p-5 text-white">
+                <i class="fa-solid fa-truck-fast mb-3 text-2xl text-red-400"></i>
+                <h3 class="font-bold">Giao hàng tận công trình</h3>
+                <p class="mt-2 text-sm text-slate-300">
+                    Hỗ trợ giao hàng và tư vấn vật tư theo nhu cầu.
+                </p>
+            </div>
+        </aside>
+
+        <!-- PRODUCT AREA -->
+        <section class="min-w-0">
+            <div class="mb-5 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+                <div>
+                    <h2 class="text-2xl font-black text-slate-900">Sản phẩm nổi bật</h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Lựa chọn vật liệu và thiết bị cho công trình của bạn
+                    </p>
+                </div>
+
+                <select id="sortProducts"
+                        onchange="if (typeof handleSort === 'function') handleSort(this.value)"
+                        class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none">
+                    <option value="default">Sắp xếp mặc định</option>
+                    <option value="price-asc">Giá thấp đến cao</option>
+                    <option value="price-desc">Giá cao đến thấp</option>
+                    <option value="name-asc">Tên A–Z</option>
+                </select>
+            </div>
+
+            <!-- app.js / mock-data.js render products here -->
+            <div id="productGrid" class="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                <div class="col-span-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center">
+                    <i class="fa-solid fa-box-open mb-3 text-3xl text-slate-300"></i>
+                    <p class="font-semibold text-slate-700">Đang tải sản phẩm...</p>
+                    <p class="mt-1 text-sm text-slate-400">Vui lòng chờ trong giây lát.</p>
+                </div>
+            </div>
+
+            <div id="productEmptyState" class="mt-5 hidden rounded-2xl bg-white p-8 text-center">
+                <i class="fa-solid fa-magnifying-glass mb-3 text-3xl text-slate-300"></i>
+                <p class="font-semibold">Không tìm thấy sản phẩm phù hợp.</p>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- AI CONSULTANT MODAL -->
+<div id="aiModal" class="fixed inset-0 z-[80] hidden">
+    <div class="absolute inset-0 bg-slate-950/60" onclick="closeAiConsultant()"></div>
+    <div class="absolute inset-x-3 top-1/2 mx-auto max-h-[90vh] w-auto max-w-2xl -translate-y-1/2 overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:inset-x-auto sm:w-full sm:p-7">
+        <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-xl font-bold"><i class="fa-solid fa-wand-magic-sparkles mr-2 text-amber-500"></i>AI tư vấn xây dựng</h2>
+            <button type="button" onclick="closeAiConsultant()" class="rounded-lg p-2 hover:bg-slate-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="aiChatMessages" class="mb-4 min-h-40 space-y-3 overflow-y-auto rounded-xl bg-slate-50 p-4">
+            <p class="text-sm text-slate-500">Xin chào! Hãy cho biết nhu cầu xây dựng của bạn.</p>
+        </div>
+        <form id="aiChatForm" class="flex gap-2" onsubmit="if(typeof sendAiMessage==='function'){event.preventDefault();sendAiMessage(event);}">
+            <input id="aiChatInput" type="text" placeholder="Ví dụ: dự toán xây nhà 20m²..."
+                   class="min-w-0 flex-1 rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-red-500">
+            <button type="submit" class="rounded-xl bg-red-600 px-4 font-bold text-white hover:bg-red-700">
+                Gửi
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- CART MODAL -->
+<div id="cartModal" class="fixed inset-0 z-[90] hidden overflow-hidden">
+    <button type="button" aria-label="Đóng giỏ hàng"
+            class="absolute inset-0 h-full w-full cursor-default bg-slate-950/50"
+            onclick="toggleCart()"></button>
+
+    <section class="absolute right-0 top-0 flex h-full w-full max-w-lg flex-col bg-white shadow-2xl">
+        <div class="flex items-center justify-between border-b border-slate-200 p-5 sm:p-6">
+            <div>
+                <h2 class="text-xl font-black">Giỏ hàng của bạn</h2>
+                <p class="mt-1 text-xs text-slate-500">Kiểm tra sản phẩm trước khi đặt hàng</p>
+            </div>
+            <button type="button" onclick="toggleCart()"
+                    class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+        </div>
+
+        <div id="cartItemsList" class="flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
+            <!-- cart.js renders cart items here -->
+        </div>
+
+        <div class="space-y-4 border-t border-slate-200 bg-slate-50 p-5 sm:p-6">
+            <div class="flex justify-between gap-4 text-sm text-slate-600">
+                <span>Tạm tính vật tư & máy móc:</span>
+                <span id="cartSubtotal" class="font-bold text-slate-900">0 đ</span>
+            </div>
+
+            <div class="flex justify-between gap-4 text-sm text-slate-600">
+                <span>Phí vận chuyển dự kiến:</span>
+                <span class="font-semibold text-emerald-600">Miễn phí (Nội thành)</span>
+            </div>
+
+            <div class="flex justify-between gap-4 border-t border-slate-200 pt-4 text-lg font-black">
+                <span>Tổng thanh toán:</span>
+                <span id="cartTotal" class="text-red-600">0 đ</span>
+            </div>
+
+            <button type="button" onclick="checkout()"
+                    class="w-full rounded-xl bg-red-600 py-4 font-bold text-white shadow-lg hover:bg-red-700">
+                Tiến hành đặt hàng <i class="fa-solid fa-arrow-right ml-2"></i>
+            </button>
+        </div>
+    </section>
+</div>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div id="detailModal" class="fixed inset-0 z-[100] hidden overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-950/60" onclick="closeDetailModal()"></div>
+    <div class="relative mx-auto my-8 w-[calc(100%-2rem)] max-w-2xl rounded-2xl bg-white p-6 shadow-2xl sm:p-8">
+        <button type="button" onclick="closeDetailModal()"
+                class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div id="detailModalContent"></div>
+    </div>
+</div>
+
+<!-- ESTIMATOR MODAL -->
+<div id="estimatorModal" class="fixed inset-0 z-[100] hidden overflow-y-auto">
+    <div class="fixed inset-0 bg-slate-950/60" onclick="closeEstimator()"></div>
+    <div class="relative mx-auto my-8 w-[calc(100%-2rem)] max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <div class="mb-5 flex items-center justify-between">
+            <h2 class="text-xl font-bold">Dự toán vật tư xây dựng</h2>
+            <button type="button" onclick="closeEstimator()" class="rounded-lg p-2 hover:bg-slate-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <label for="estArea" class="mb-2 block text-sm font-semibold">Diện tích (m²)</label>
+                <input id="estArea" type="number" min="1" placeholder="Ví dụ: 20"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+            <div>
+                <label for="estFloors" class="mb-2 block text-sm font-semibold">Số tầng</label>
+                <input id="estFloors" type="number" min="1" value="1"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+            <button type="button" onclick="calculateEstimation()"
+                    class="w-full rounded-xl bg-red-600 py-3 font-bold text-white hover:bg-red-700">
+                Tính dự toán
+            </button>
+            <div id="estResult" class="hidden rounded-xl bg-slate-50 p-4 text-sm"></div>
+        </div>
+    </div>
+</div>
+
+<!-- CHECKOUT MODAL -->
+<div id="checkoutModal" class="fixed inset-0 z-[110] hidden items-center justify-center overflow-y-auto bg-slate-950/60 p-3">
+    <div class="my-auto w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl sm:p-7">
+        <div class="mb-5 flex items-center justify-between border-b border-slate-100 pb-4">
+            <h2 class="text-xl font-bold">Thông tin giao hàng</h2>
+            <button type="button" onclick="closeCheckoutModal()" class="rounded-lg p-2 hover:bg-slate-100">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <form id="checkoutForm" onsubmit="submitOrder(event)" class="space-y-4">
+            <div>
+                <label for="custName" class="mb-1 block text-sm font-semibold">Họ và tên *</label>
+                <input id="custName" required autocomplete="name"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+            <div>
+                <label for="custPhone" class="mb-1 block text-sm font-semibold">Số điện thoại *</label>
+                <input id="custPhone" type="tel" required autocomplete="tel"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+            <div>
+                <label for="custAddress" class="mb-1 block text-sm font-semibold">Địa chỉ giao hàng *</label>
+                <textarea id="custAddress" rows="3" required autocomplete="street-address"
+                          class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500"></textarea>
+            </div>
+            <div>
+                <label for="custNotes" class="mb-1 block text-sm font-semibold">Ghi chú</label>
+                <input id="custNotes"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+            <button id="btnSubmitOrder" type="submit"
+                    class="w-full rounded-xl bg-red-600 py-3 font-bold text-white hover:bg-red-700">
+                Xác nhận đặt hàng
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div id="loginModal"
+     class="fixed inset-0 z-[120] hidden items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+
+    <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+        <button type="button" onclick="closeLoginModal()"
+                class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <h2 class="mb-2 text-2xl font-black">Đăng nhập MegaBuild</h2>
+        <p class="mb-6 text-sm text-slate-500">
+            Đăng nhập để tiếp tục mua sắm
+        </p>
+
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+
+            <div>
+                <label for="loginEmail"
+                       class="mb-1 block text-sm font-semibold">
+                    Email
+                </label>
+                <input id="loginEmail" name="email" type="email"
+                       required autocomplete="email"
+                       placeholder="Nhập email của bạn"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+
+            <div>
+                <label for="loginPassword"
+                       class="mb-1 block text-sm font-semibold">
+                    Mật khẩu
+                </label>
+                <input id="loginPassword" name="password" type="password"
+                       required autocomplete="current-password"
+                       placeholder="Nhập mật khẩu"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+
+            <div id="loginMessage" class="text-sm" role="status"></div>
+
+            <button id="loginButton" type="submit"
+                    class="w-full rounded-xl bg-red-600 py-3 font-bold text-white hover:bg-red-700">
+                Đăng nhập
+            </button>
+        </form>
+
+        <p class="mt-5 text-center text-sm text-slate-500">
+            Chưa có tài khoản?
+            <button type="button" onclick="switchToRegister()"
+                    class="font-bold text-red-600 hover:underline">
+                Đăng ký ngay
+            </button>
+        </p>
+    </div>
+</div>
+<!-- END LOGIN MODAL -->
+
+<!-- REGISTER MODAL -->
+<div id="registerModal"
+     class="fixed inset-0 z-[120] hidden items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm">
+
+    <div class="relative my-auto w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+
+        <button type="button" onclick="closeRegisterModal()"
+                class="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100">
+            <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+
+        <h2 class="mb-2 text-2xl font-black">Tạo tài khoản</h2>
+        <p class="mb-6 text-sm text-slate-500">
+            Đăng ký và xác minh Gmail ngay tại đây
+        </p>
+
+        <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+
+            <div>
+                <label for="registerName" class="mb-1 block text-sm font-semibold">
+                    Họ và tên
+                </label>
+                <input id="registerName" type="text" required autocomplete="name"
+                       placeholder="Nhập họ tên"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+
+            <div>
+                <label for="registerEmail" class="mb-1 block text-sm font-semibold">
+                    Email
+                </label>
+                <input id="registerEmail" type="email" required autocomplete="email"
+                       placeholder="Nhập Gmail của bạn"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+
+            <div>
+                <label for="registerPassword" class="mb-1 block text-sm font-semibold">
+                    Mật khẩu
+                </label>
+                <input id="registerPassword" type="password" required minlength="8"
+                       autocomplete="new-password"
+                       placeholder="Tối thiểu 8 ký tự"
+                       class="w-full rounded-xl border border-slate-200 p-3 outline-none focus:border-red-500">
+            </div>
+
+            <!-- Khu vực OTP: xuất hiện sau khi gửi mã -->
+            <div id="registerOtpSection"
+                 class="hidden space-y-3 rounded-xl border border-red-100 bg-red-50 p-4">
+
+                <div class="flex items-center gap-2 text-red-600">
+                    <i class="fa-solid fa-envelope-circle-check text-xl"></i>
+                    <span class="font-bold">Xác minh Gmail</span>
+                </div>
+
+                <p id="registerOtpMessage" class="text-sm text-slate-600">
+                    Mã xác minh đã được gửi đến Gmail của bạn.
+                </p>
+
+                <div>
+                    <label for="registerOtpCode"
+                           class="mb-1 block text-sm font-semibold">
+                        Nhập mã OTP
+                    </label>
+                    <input id="registerOtpCode" type="text" maxlength="6"
+                           inputmode="numeric" autocomplete="one-time-code"
+                           pattern="[0-9]{6}"
+                           placeholder="Nhập 6 chữ số"
+                           class="w-full rounded-xl border border-slate-200 bg-white p-3 text-center text-xl tracking-[0.4em] outline-none focus:border-red-500">
+                </div>
+
+                <button id="verifyRegisterOtpBtn" type="button"
+                        onclick="handleVerifyRegisterOtp()"
+                        class="w-full rounded-xl bg-green-600 py-3 font-bold text-white hover:bg-green-700">
+                    Xác minh và đăng ký
+                </button>
+
+                <button id="resendRegisterOtpBtn" type="button"
+                        class="w-full rounded-xl border border-red-200 bg-white py-2 font-semibold text-red-600 hover:bg-red-50">
+                    Gửi lại mã OTP
+                </button>
+            </div>
+
+            <div id="registerMessage" class="text-sm" role="status"></div>
+
+            <button id="registerButton" type="submit"
+                    class="w-full rounded-xl bg-red-600 py-3 font-bold text-white hover:bg-red-700">
+                Gửi mã OTP
+            </button>
+        </form>
+
+        <p class="mt-5 text-center text-sm text-slate-500">
+            Đã có tài khoản?
+            <button type="button" onclick="switchToLogin()"
+                    class="font-bold text-red-600 hover:underline">
+                Đăng nhập
+            </button>
+        </p>
+    </div>
+</div>
+<!-- MODAL XÁC THỰC OTP -->
+<div id="otpModal"
+     class="fixed inset-0 z-[130] hidden items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+
+    <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <h2 class="mb-2 text-2xl font-bold text-gray-900">
+            Xác thực email
+        </h2>
+
+        <p class="mb-4 text-sm text-gray-600">
+            Mã OTP đã được gửi đến:
+            <strong id="otpEmailText"></strong>
+        </p>
+
+        <form id="otpForm" onsubmit="handleVerifyOtp(event)">
+            <label for="otpCode"
+                   class="mb-2 block text-sm font-medium text-gray-700">
+                Nhập mã OTP 6 số
+            </label>
+
+            <input
+                    id="otpCode"
+                    name="code"
+                    type="text"
+                    inputmode="numeric"
+                    autocomplete="one-time-code"
+                    maxlength="6"
+                    pattern="[0-9]{6}"
+                    required
+                    placeholder="Nhập mã OTP"
+                    class="mb-4 w-full rounded-lg border border-gray-300 px-4 py-3 text-center text-xl tracking-[0.4em]"
+            />
+
+            <button
+                    id="otpVerifyButton"
+                    type="submit"
+                    class="w-full rounded-lg bg-red-600 px-4 py-3 font-semibold text-white hover:bg-red-700">
+                Xác minh OTP
+            </button>
+        </form>
+
+        <button
+                id="otpResendButton"
+                type="button"
+                onclick="handleResendOtp()"
+                class="mt-4 w-full text-sm font-medium text-red-600 hover:underline">
+            Gửi lại mã OTP
+        </button>
+    </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"
+     class="pointer-events-none fixed bottom-5 right-5 z-[200] translate-y-10 rounded-xl bg-slate-900 px-5 py-4 text-sm font-medium text-white opacity-0 shadow-2xl transition-all">
+    <i id="toastIcon" class="fa-solid fa-circle-check mr-2 text-emerald-400"></i>
+    <span id="toastMsg">Thành công!</span>
+</div>
+
+<!-- FOOTER -->
+<footer id="support" class="mt-16 bg-slate-950 text-slate-400">
+    <div class="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <div>
+            <div class="mb-4 text-2xl font-black text-white">
+                MEGA<span class="text-red-500">BUILD</span>
+            </div>
+            <p class="text-sm leading-6">
+                Phân phối vật liệu xây dựng và thiết bị máy móc cho mọi công trình.
+            </p>
+        </div>
+        <div>
+            <h3 class="mb-4 font-bold text-white">Danh mục</h3>
+            <ul class="space-y-2 text-sm">
+                <li><button onclick="filterCategory('machines')" class="hover:text-white">Máy móc & thiết bị</button></li>
+                <li><button onclick="filterCategory('steel')" class="hover:text-white">Thép & kim loại</button></li>
+                <li><button onclick="filterCategory('paint')" class="hover:text-white">Sơn & hóa chất</button></li>
+                <li><button onclick="filterCategory('cement')" class="hover:text-white">Xi măng & gạch</button></li>
+            </ul>
+        </div>
+        <div id="stores">
+            <h3 class="mb-4 font-bold text-white">Hỗ trợ khách hàng</h3>
+            <ul class="space-y-2 text-sm">
+                <li><a href="#support" class="hover:text-white">Liên hệ</a></li>
+                <li><a href="#support" class="hover:text-white">Chính sách giao hàng</a></li>
+                <li><a href="#support" class="hover:text-white">Chính sách bảo hành</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="mb-4 font-bold text-white">Liên hệ</h3>
+            <p class="mb-2 text-sm"><i class="fa-solid fa-phone mr-2 text-red-500"></i>1900 8888</p>
+            <p class="text-sm"><i class="fa-solid fa-envelope mr-2 text-red-500"></i>support@megabuild.vn</p>
+        </div>
+    </div>
+    <div class="border-t border-slate-800 px-4 py-5 text-center text-xs">
+        © 2026 MegaBuild Vietnam. Bản quyền thuộc về MegaBuild.
+    </div>
+</footer>
+
+<!-- SCRIPTS: giữ thứ tự để tránh lỗi phụ thuộc -->
+<script src="/js/i18n.js"></script>
+<script src="/js/mock-data.js"></script>
+<script src="/js/api.js"></script>
+<script src="/js/cart.js"></script>
+<script src="/js/estimator.js"></script>
+<script src="/js/ai-chat.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/app.js"></script>
+
+<!-- FIX: đảm bảo các modal không che trang chủ khi vừa tải -->
+<script>
+    (function () {
+        const modalIds = [
+            'cartModal',
+            'aiModal',
+            'detailModal',
+            'estimatorModal',
+            'checkoutModal',
+            'loginModal',
+            'registerModal',
+            'otpModal'
+        ];
+
+        function closeInitialModals() {
+            modalIds.forEach(function (id) {
+                const modal = document.getElementById(id);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            });
+
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', closeInitialModals);
+        } else {
+            closeInitialModals();
+        }
+
+        // Đồng bộ ô tìm kiếm desktop/mobile
+        const desktopSearch = document.getElementById('searchInput');
+        const mobileSearch = document.getElementById('mobileSearchInput');
+
+        if (desktopSearch && mobileSearch) {
+            desktopSearch.addEventListener('input', function () {
+                mobileSearch.value = desktopSearch.value;
+            });
+            mobileSearch.addEventListener('input', function () {
+                desktopSearch.value = mobileSearch.value;
+            });
+        }
+
+        // Không để nút Enter trong ô tìm kiếm tải lại trang
+        [desktopSearch, mobileSearch].forEach(function (input) {
+            if (!input) return;
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    if (typeof handleSearch === 'function') {
+                        handleSearch();
+                    }
+                }
+            });
+        });
+
+        // Đóng dropdown khi click bên ngoài
+        document.addEventListener('click', function (event) {
+            const container = document.getElementById('accountContainer');
+            const dropdown = document.getElementById('accountDropdown');
+
+            if (container && dropdown && !container.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        // Cập nhật giao diện tài khoản nếu auth.js cung cấp dữ liệu localStorage
+        try {
+            const user = JSON.parse(localStorage.getItem('megabuild_user') || 'null');
+
+            if (user) {
+                const nameElement = document.getElementById('dropdownUserName');
+                const emailElement = document.getElementById('dropdownUserEmail');
+                const loginText = document.getElementById('accountLoginText');
+
+                if (nameElement) {
+                    nameElement.textContent =
+                        user.name || user.fullName || user.full_name || user.email || 'Người dùng';
+                }
+
+                if (emailElement) {
+                    emailElement.textContent = user.email || '';
+                }
+
+                if (loginText) {
+                    loginText.textContent =
+                        user.name || user.fullName || user.full_name || 'Tài khoản';
+                }
+            }
+        } catch (error) {
+            console.warn('Không thể đọc thông tin tài khoản:', error);
+        }
+
+        // Dropdown tài khoản: nút đăng nhập vẫn dùng handler có sẵn của auth.js.
+        const accountButton = document.getElementById('accountButton');
+        const dropdown = document.getElementById('accountDropdown');
+
+        if (accountButton && dropdown) {
+            accountButton.addEventListener('contextmenu', function (event) {
+                event.preventDefault();
+            });
+        }
+    })();
+</script>
+
+
+
+</body>
+</html>

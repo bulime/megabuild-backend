@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MegaBuild - Thống kê hệ thống</title>
+    <script>
+        document.documentElement.lang = localStorage.getItem("megabuildLang") || "vi";
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+
+<body class="bg-slate-100 min-h-screen">
+<header class="bg-white border-b sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='admin.html'" class="px-3 py-2 rounded-lg bg-slate-200 text-slate-700 hover:bg-slate-300 font-medium">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Quay lại Dashboard
+            </button>
+            <h1 class="text-xl font-bold text-slate-800">Thống kê hệ thống MegaBuild</h1>
+        </div>
+        <span id="adminName" class="font-semibold text-slate-700">Admin</span>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Báo cáo doanh thu & Đơn hàng</h2>
+            <p class="text-sm text-gray-500 mt-1">Chi tiết doanh thu theo tuần, tháng, năm và trạng thái đơn.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="resetRevenueData()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium">
+                <i class="fa-solid fa-rotate-left mr-2"></i>Reset doanh thu về 0
+            </button>
+            <button onclick="loadStatistics()" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium">
+                <i class="fa-solid fa-arrows-rotate mr-2"></i>Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- BẢNG BÁO CÁO DOANH THU THEO THỜI GIAN -->
+    <div class="mb-8">
+        <div class="overflow-x-auto border rounded-2xl bg-white shadow-sm">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 border-b text-xs text-slate-500 uppercase">
+                <tr>
+                    <th class="px-6 py-4">Kỳ báo cáo</th>
+                    <th class="px-6 py-4">Số đơn hoàn thành</th>
+                    <th class="px-6 py-4">Doanh thu</th>
+                </tr>
+                </thead>
+                <tbody class="divide-y text-slate-700 text-sm">
+                <tr>
+                    <td class="px-6 py-4 font-semibold">Tuần này</td>
+                    <td id="completedOrdersWeek" class="px-6 py-4">0 đơn</td>
+                    <td id="revenueWeek" class="px-6 py-4 font-bold text-green-600">0 đ</td>
+                </tr>
+                <tr class="bg-slate-50/50">
+                    <td class="px-6 py-4 font-semibold">Tháng này</td>
+                    <td id="completedOrdersMonth" class="px-6 py-4">0 đơn</td>
+                    <td id="revenueMonth" class="px-6 py-4 font-bold text-indigo-600">0 đ</td>
+                </tr>
+                <tr>
+                    <td class="px-6 py-4 font-semibold">Năm nay</td>
+                    <td id="completedOrdersYear" class="px-6 py-4">0 đơn</td>
+                    <td id="revenueYear" class="px-6 py-4 font-bold text-blue-600">0 đ</td>
+                </tr>
+                <tr class="bg-indigo-50 font-bold border-t border-indigo-100">
+                    <td class="px-6 py-4 text-indigo-900">Tổng toàn thời gian</td>
+                    <td id="completedOrdersTotal" class="px-6 py-4 text-indigo-900">0 đơn</td>
+                    <td id="revenueTotal" class="px-6 py-4 text-indigo-900 text-base">0 đ</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="p-6 border rounded-2xl bg-white shadow-sm">
+            <h4 class="font-bold text-slate-800 text-lg mb-3">Trạng thái tất cả đơn hàng</h4>
+            <div id="orderStatusStats" class="space-y-2 text-sm text-slate-600">Đang tải...</div>
+        </div>
+        <div class="p-6 border rounded-2xl bg-white shadow-sm">
+            <h4 class="font-bold text-slate-800 text-lg mb-3">Tóm tắt hoạt động</h4>
+            <div id="revenueStats" class="space-y-2 text-sm text-slate-600">Đang tải...</div>
+        </div>
+    </div>
+</main>
+
+<script>
+    "use strict";
+
+    const ADMIN_API_BASE = "/api";
+
+    const ORDER_STATUSES = [
+        "PENDING",
+        "CONFIRMED",
+        "SHIPPING",
+        "COMPLETED",
+        "CANCELLED"
+    ];
+
+    function getCurrentAdmin() {
+        try {
+            const raw = localStorage.getItem("megabuild_user");
+            if (!raw) return null;
+
+            const user = JSON.parse(raw);
+            if (!user || !(user.id || user.userId)) return null;
+
+            return user;
+        } catch (error) {
+            console.error("Không đọc được tài khoản:", error);
+            return null;
+        }
+    }
+
+    function getAdminUserId() {
+        const admin = getCurrentAdmin();
+        return admin ? (admin.id || admin.userId) : null;
+    }
+
+    function formatMoney(value) {
+        const amount = Number(value || 0);
+
+        return amount.toLocaleString("vi-VN", {
+            style: "currency",
+            currency: "VND",
+            maximumFractionDigits: 0
+        });
+    }
+
+    async function readJson(response) {
+        const text = await response.text();
+
+        let data = {};
+        try {
+            data = text ? JSON.parse(text) : {};
+        } catch {
+            throw new Error("Máy chủ trả về dữ liệu không hợp lệ.");
+        }
+
+        if (!response.ok || data.success === false) {
+            throw new Error(
+                data.message || `Lỗi máy chủ HTTP ${response.status}`
+            );
+        }
+
+        return data;
+    }
+
+    async function adminFetch(url, options = {}) {
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                ...(options.headers || {})
+            }
+        });
+
+        return readJson(response);
+    }
+
+    function normalizeList(data, key) {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data[key])) return data[key];
+        return [];
+    }
+
+    function statusText(status) {
+        const normalized = String(status || "").trim().toUpperCase();
+
+        const labels = {
+            PENDING: "Chờ xác nhận",
+            CONFIRMED: "Đã xác nhận",
+            SHIPPING: "Đang giao",
+            COMPLETED: "Hoàn thành",
+            CANCELLED: "Đã hủy"
+        };
+
+        return labels[normalized] || status || "Không xác định";
+    }
+
+    function isCompleted(order) {
+        const status = String(order.status || "")
+            .trim()
+            .toUpperCase();
+
+        return status === "COMPLETED" || status === "HOÀN THÀNH";
+    }
+
+    function getOrderDate(order) {
+        const raw = order.createdAt || order.date;
+
+        if (!raw) return null;
+
+        const date = new Date(raw);
+
+        return Number.isFinite(date.getTime()) ? date : null;
+    }
+
+    function getOrderAmount(order) {
+        const amount = Number(order.totalAmount || 0);
+        return Number.isFinite(amount) ? amount : 0;
+    }
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.textContent = value;
+    }
+
+    function getStartOfWeek(date) {
+        const result = new Date(date);
+        result.setHours(0, 0, 0, 0);
+
+        const day = result.getDay();
+        const difference = day === 0 ? 6 : day - 1;
+
+        result.setDate(result.getDate() - difference);
+
+        return result;
+    }
+
+
+    async function loadStatistics() {
+        const adminId = getAdminUserId();
+
+        if (!adminId) {
+            alert("Vui lòng đăng nhập tài khoản quản trị.");
+            window.location.href = "/";
+            return;
+        }
+
+        const statusElement = document.getElementById("orderStatusStats");
+        const summaryElement = document.getElementById("revenueStats");
+
+        if (statusElement) statusElement.textContent = "Đang tải...";
+        if (summaryElement) summaryElement.textContent = "Đang tải...";
+
+        try {
+            const orderData = await adminFetch(
+                `${ADMIN_API_BASE}/admin/orders?userId=${encodeURIComponent(adminId)}`
+            );
+
+            const orders = normalizeList(orderData, "orders");
+
+            const resetData = await adminFetch(
+                `${ADMIN_API_BASE}/admin/orders/reset-revenue/time?userId=${encodeURIComponent(adminId)}`
+            );
+
+            const resetAt = resetData.resetAt
+                ? new Date(resetData.resetAt)
+                : null;
+
+            const validResetAt =
+                resetAt && Number.isFinite(resetAt.getTime())
+                    ? resetAt
+                    : null;
+
+            const now = new Date();
+            const weekStart = getStartOfWeek(now);
+            const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+            const yearStart = new Date(now.getFullYear(), 0, 1);
+
+            const statusCounts = {
+                PENDING: 0,
+                CONFIRMED: 0,
+                SHIPPING: 0,
+                COMPLETED: 0,
+                CANCELLED: 0,
+                OTHER: 0
+            };
+
+            let revenueWeek = 0;
+            let revenueMonth = 0;
+            let revenueYear = 0;
+            let revenueTotal = 0;
+
+            let completedWeek = 0;
+            let completedMonth = 0;
+            let completedYear = 0;
+            let completedTotal = 0;
+
+            let pendingOrders = 0;
+            let cancelledOrders = 0;
+
+            for (const order of orders) {
+                const status = String(order.status || "")
+                    .trim()
+                    .toUpperCase();
+
+                if (Object.prototype.hasOwnProperty.call(statusCounts, status)) {
+                    statusCounts[status]++;
+                } else {
+                    statusCounts.OTHER++;
+                }
+
+                if (status === "PENDING") pendingOrders++;
+                if (status === "CANCELLED") cancelledOrders++;
+
+                if (!isCompleted(order)) continue;
+
+                const orderDate = getOrderDate(order);
+
+                // Đơn cũ vẫn được giữ trong lịch sử,
+                // nhưng không được tính doanh thu sau khi reset.
+                if (
+                    validResetAt &&
+                    (!orderDate || orderDate < validResetAt)
+                ) {
+                    continue;
+                }
+
+                if (!orderDate) continue;
+
+                const amount = getOrderAmount(order);
+
+                revenueTotal += amount;
+                completedTotal++;
+
+                if (orderDate >= weekStart && orderDate <= now) {
+                    revenueWeek += amount;
+                    completedWeek++;
+                }
+
+                if (orderDate >= monthStart && orderDate <= now) {
+                    revenueMonth += amount;
+                    completedMonth++;
+                }
+
+                if (orderDate >= yearStart && orderDate <= now) {
+                    revenueYear += amount;
+                    completedYear++;
+                }
+            }
+
+            // BẢNG DOANH THU
+            setText("completedOrdersWeek", `${completedWeek} đơn`);
+            setText("completedOrdersMonth", `${completedMonth} đơn`);
+            setText("completedOrdersYear", `${completedYear} đơn`);
+            setText("completedOrdersTotal", `${completedTotal} đơn`);
+
+            setText("revenueWeek", formatMoney(revenueWeek));
+            setText("revenueMonth", formatMoney(revenueMonth));
+            setText("revenueYear", formatMoney(revenueYear));
+            setText("revenueTotal", formatMoney(revenueTotal));
+
+            // KHUNG TRẠNG THÁI TẤT CẢ ĐƠN HÀNG
+            if (statusElement) {
+                statusElement.innerHTML = `
+                <div class="flex justify-between">
+                    <span>Tổng số đơn hàng</span>
+                    <strong>${orders.length}</strong>
+                </div>
+                ${ORDER_STATUSES.map(status => `
+                    <div class="flex justify-between">
+                        <span>${statusText(status)}</span>
+                        <strong>${statusCounts[status]}</strong>
+                    </div>
+                `).join("")}
+                ${statusCounts.OTHER > 0 ? `
+                    <div class="flex justify-between">
+                        <span>Trạng thái khác</span>
+                        <strong>${statusCounts.OTHER}</strong>
+                    </div>
+                ` : ""}
+            `;
+            }
+
+            // KHUNG TÓM TẮT HOẠT ĐỘNG
+            if (summaryElement) {
+                summaryElement.innerHTML = `
+                <div class="flex justify-between">
+                    <span>Tổng đơn hàng trong lịch sử</span>
+                    <strong>${orders.length}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span>Đơn chờ xác nhận</span>
+                    <strong>${pendingOrders}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span>Đơn đã hủy</span>
+                    <strong>${cancelledOrders}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span>Đơn hoàn thành được tính doanh thu</span>
+                    <strong>${completedTotal}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span>Tổng doanh thu sau mốc reset</span>
+                    <strong class="text-green-600">${formatMoney(revenueTotal)}</strong>
+                </div>
+            `;
+            }
+
+            const admin = getCurrentAdmin();
+
+            if (admin) {
+                setText(
+                    "adminName",
+                    admin.fullName || admin.name || admin.username || "Admin"
+                );
+            }
+
+            console.log("Thống kê đã tải:", {
+                totalOrders: orders.length,
+                completedTotal,
+                revenueTotal,
+                revenueWeek,
+                revenueMonth,
+                revenueYear,
+                resetAt: validResetAt
+                    ? validResetAt.toISOString()
+                    : null
+            });
+
+        } catch (error) {
+            console.error("Lỗi tải thống kê:", error);
+
+            if (statusElement) {
+                statusElement.textContent =
+                    "Không tải được trạng thái đơn hàng.";
+            }
+
+            if (summaryElement) {
+                summaryElement.textContent =
+                    "Không tải được tóm tắt hoạt động.";
+            }
+
+            alert(
+                "Lỗi tải thống kê: " +
+                (error.message || "Không xác định")
+            );
+        }
+    }
+
+    async function resetRevenueData() {
+        const adminId = getAdminUserId();
+
+        if (!adminId) {
+            alert("Vui lòng đăng nhập tài khoản quản trị.");
+            window.location.href = "/";
+            return;
+        }
+
+        const confirmed = confirm(
+            "Bạn có chắc muốn reset doanh thu về 0đ?\n\n" +
+            "Đơn hàng, trạng thái đơn và lịch sử mua hàng vẫn được giữ nguyên."
+        );
+
+        if (!confirmed) return;
+
+        try {
+            const result = await adminFetch(
+                `${ADMIN_API_BASE}/admin/orders/reset-revenue?userId=${encodeURIComponent(adminId)}`,
+                {
+                    method: "POST"
+                }
+            );
+
+            alert(result.message || "Đã reset mốc doanh thu thành công.");
+
+            await loadStatistics();
+        } catch (error) {
+            console.error("Lỗi reset doanh thu:", error);
+
+            alert(
+                "Không thể reset doanh thu: " +
+                (error.message || "Lỗi không xác định")
+            );
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const admin = getCurrentAdmin();
+
+        if (!admin) {
+            window.location.href = "/";
+            return;
+        }
+
+        setText(
+            "adminName",
+            admin.fullName || admin.name || admin.username || "Admin"
+        );
+
+        loadStatistics();
+    });
+
+</script>
+</body>
+</html>

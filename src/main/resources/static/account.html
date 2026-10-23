@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản của tôi - MegaBuild</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+          rel="stylesheet">
+
+    <style>
+        body { font-family: Inter, sans-serif; }
+        .nav-item.active {
+            color: #dc2626;
+            background: #fef2f2;
+            font-weight: 700;
+        }
+        .hidden-panel { display: none !important; }
+    </style>
+</head>
+
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 border-b border-slate-200 bg-white shadow-sm">
+    <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+        <a href="/index.html" class="flex items-center gap-3">
+            <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-red-600 text-white">
+                <i class="fa-solid fa-helmet-safety text-2xl"></i>
+            </div>
+            <div>
+                <div class="text-xl font-black tracking-tight">
+                    MEGA<span class="text-red-600">BUILD</span>
+                </div>
+                <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                    Vật liệu & Thiết bị xây dựng
+                </div>
+            </div>
+        </a>
+
+        <div class="flex items-center gap-3">
+            <a href="/index.html"
+               class="rounded-xl px-3 py-2 text-sm font-semibold hover:bg-slate-100">
+                <i class="fa-solid fa-house mr-1"></i>
+                <span class="hidden sm:inline">Trang chủ</span>
+            </a>
+
+            <a href="/index.html"
+               class="rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700">
+                <i class="fa-solid fa-cart-shopping mr-1"></i>
+                Mua sắm
+            </a>
+        </div>
+    </div>
+</header>
+
+<!-- PAGE TITLE -->
+<section class="bg-gradient-to-r from-slate-950 via-slate-800 to-red-900 text-white">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <p class="mb-2 text-sm text-red-200">MegaBuild / Tài khoản</p>
+        <h1 class="text-3xl font-black sm:text-4xl">Tài khoản của tôi</h1>
+        <p class="mt-2 text-sm text-slate-300">
+            Quản lý thông tin cá nhân và theo dõi đơn hàng của bạn.
+        </p>
+    </div>
+</section>
+
+<main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+    <!-- USER SUMMARY -->
+    <section class="mb-8 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:p-7">
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
+            <i class="fa-solid fa-user text-2xl"></i>
+        </div>
+
+        <div class="min-w-0 flex-1">
+            <p class="text-sm text-slate-500">Xin chào,</p>
+            <h2 id="summaryName" class="mt-1 truncate text-xl font-black">Khách hàng MegaBuild</h2>
+            <p id="summaryEmail" class="mt-1 break-all text-sm text-slate-500"></p>
+        </div>
+
+        <span class="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
+            <i class="fa-solid fa-circle-check"></i>
+            Tài khoản khách hàng
+        </span>
+    </section>
+
+    <div class="grid grid-cols-1 gap-8 lg:grid-cols-[260px_minmax(0,1fr)]">
+
+        <!-- SIDEBAR -->
+        <aside>
+            <nav class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-sm">
+                <button type="button" data-panel="profilePanel"
+                        class="nav-item active flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm">
+                    <i class="fa-regular fa-user w-5"></i>
+                    Thông tin cá nhân
+                </button>
+
+                <button type="button" data-panel="ordersPanel"
+                        class="nav-item flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm hover:bg-slate-50">
+                    <i class="fa-solid fa-box w-5"></i>
+                    Lịch sử đơn hàng
+                </button>
+
+                <button type="button" data-panel="passwordPanel"
+                        class="nav-item flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm hover:bg-slate-50">
+                    <i class="fa-solid fa-lock w-5"></i>
+                    Đổi mật khẩu
+                </button>
+
+                <div class="my-2 border-t border-slate-100"></div>
+
+                <button id="logoutButton" type="button"
+                        class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold text-red-600 hover:bg-red-50">
+                    <i class="fa-solid fa-right-from-bracket w-5"></i>
+                    Đăng xuất
+                </button>
+            </nav>
+
+            <div class="mt-5 rounded-2xl bg-slate-900 p-5 text-white">
+                <i class="fa-solid fa-headset mb-3 text-2xl text-red-400"></i>
+                <h3 class="font-bold">Cần hỗ trợ?</h3>
+                <p class="mt-2 text-sm leading-6 text-slate-300">
+                    Liên hệ MegaBuild nếu bạn cần hỗ trợ về tài khoản hoặc đơn hàng.
+                </p>
+                <p class="mt-3 text-sm font-bold">Hotline: 1900 8888</p>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <div class="min-w-0">
+
+            <!-- PROFILE -->
+            <section id="profilePanel" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+                <div class="mb-6 border-b border-slate-100 pb-5">
+                    <h2 class="text-xl font-black">Thông tin cá nhân</h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Cập nhật thông tin liên hệ của bạn.
+                    </p>
+                </div>
+
+                <div id="profileMessage" class="mb-4 hidden rounded-xl p-3 text-sm"></div>
+
+                <form id="profileForm" class="space-y-5">
+                    <div>
+                        <label for="fullName" class="mb-2 block text-sm font-semibold">
+                            Họ và tên
+                        </label>
+                        <input id="fullName" name="name" type="text"
+                               autocomplete="name" required
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100">
+                    </div>
+
+                    <div>
+                        <label for="email" class="mb-2 block text-sm font-semibold">
+                            Email
+                        </label>
+                        <input id="email" name="email" type="email"
+                               autocomplete="email" readonly
+                               class="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-slate-500 outline-none">
+                        <p class="mt-1 text-xs text-slate-400">
+                            Email đăng nhập không thể chỉnh sửa tại đây.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label for="phone" class="mb-2 block text-sm font-semibold">
+                            Số điện thoại
+                        </label>
+                        <input id="phone" name="phone" type="tel"
+                               autocomplete="tel"
+                               placeholder="Nhập số điện thoại"
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100">
+                    </div>
+
+                    <div>
+                        <label for="address" class="mb-2 block text-sm font-semibold">
+                            Địa chỉ
+                        </label>
+                        <textarea id="address" name="address" rows="3"
+                                  autocomplete="street-address"
+                                  placeholder="Nhập địa chỉ của bạn"
+                                  class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-100"></textarea>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-2">
+                        <button type="submit"
+                                class="rounded-xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700">
+                            <i class="fa-solid fa-floppy-disk mr-2"></i>Lưu thông tin
+                        </button>
+
+                        <button type="reset"
+                                class="rounded-xl border border-slate-200 px-6 py-3 font-semibold hover:bg-slate-50">
+                            Nhập lại
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ORDERS -->
+            <section id="ordersPanel" class="hidden-panel rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+                <div class="mb-6 flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center">
+                    <div>
+                        <h2 class="text-xl font-black">Lịch sử đơn hàng</h2>
+                        <p class="mt-1 text-sm text-slate-500">
+                            Theo dõi các đơn hàng của bạn.
+                        </p>
+                    </div>
+                    <button id="refreshOrders" type="button"
+                            class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold hover:bg-slate-50">
+                        <i class="fa-solid fa-rotate mr-2"></i>Tải lại
+                    </button>
+                </div>
+
+                <div id="ordersMessage" class="rounded-xl bg-slate-50 p-5 text-sm text-slate-600">
+                    Chưa tải lịch sử đơn hàng.
+                </div>
+
+                <div id="ordersContainer" class="hidden-panel space-y-4"></div>
+
+                <p class="mt-5 text-xs leading-5 text-slate-400">
+                    Lịch sử đơn hàng chỉ hiển thị được khi backend có API phù hợp và xác định được tài khoản sở hữu đơn hàng.
+                </p>
+            </section>
+
+            <!-- CHANGE PASSWORD -->
+            <section id="passwordPanel" class="hidden-panel rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+                <div class="mb-6 border-b border-slate-100 pb-5">
+                    <h2 class="text-xl font-black">Đổi mật khẩu</h2>
+                    <p class="mt-1 text-sm text-slate-500">
+                        Bảo vệ tài khoản của bạn.
+                    </p>
+                </div>
+
+                <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-800">
+                    Chức năng đổi mật khẩu cần API backend xác thực mật khẩu hiện tại. Biểu mẫu bên dưới chưa gửi thay đổi lên máy chủ.
+                </div>
+
+                <form id="passwordForm" class="space-y-5">
+                    <div>
+                        <label for="currentPassword" class="mb-2 block text-sm font-semibold">
+                            Mật khẩu hiện tại
+                        </label>
+                        <input id="currentPassword" type="password" autocomplete="current-password" required
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500">
+                    </div>
+
+                    <div>
+                        <label for="newPassword" class="mb-2 block text-sm font-semibold">
+                            Mật khẩu mới
+                        </label>
+                        <input id="newPassword" type="password" autocomplete="new-password"
+                               minlength="6" required
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500">
+                    </div>
+
+                    <div>
+                        <label for="confirmPassword" class="mb-2 block text-sm font-semibold">
+                            Xác nhận mật khẩu mới
+                        </label>
+                        <input id="confirmPassword" type="password" autocomplete="new-password"
+                               minlength="6" required
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:border-red-500">
+                    </div>
+
+                    <div id="passwordMessage" class="hidden rounded-xl p-3 text-sm"></div>
+
+                    <button type="submit"
+                            class="rounded-xl bg-red-600 px-6 py-3 font-bold text-white hover:bg-red-700">
+                        Xác nhận đổi mật khẩu
+                    </button>
+                </form>
+            </section>
+
+        </div>
+    </div>
+</main>
+
+<footer class="mt-12 border-t border-slate-200 bg-white">
+    <div class="mx-auto flex max-w-7xl flex-col justify-between gap-3 px-4 py-6 text-xs text-slate-500 sm:flex-row sm:px-6 lg:px-8">
+        <p>© 2026 MegaBuild Vietnam.</p>
+        <a href="/index.html" class="font-semibold text-red-600 hover:text-red-700">
+            <i class="fa-solid fa-arrow-left mr-1"></i>Quay lại trang chủ
+        </a>
+    </div>
+</footer>
+
+<script>
+    (function () {
+        'use strict';
+
+        const $ = (id) => document.getElementById(id);
+
+        function getUser() {
+            try {
+                return JSON.parse(localStorage.getItem('megabuild_user') || 'null');
+            } catch (error) {
+                return null;
+            }
+        }
+
+        function showMessage(id, message, success) {
+            const element = $(id);
+            if (!element) return;
+
+            element.textContent = message;
+            element.classList.remove('hidden', 'bg-red-50', 'text-red-700',
+                'bg-emerald-50', 'text-emerald-700');
+
+            element.classList.add(
+                success ? 'bg-emerald-50' : 'bg-red-50',
+                success ? 'text-emerald-700' : 'text-red-700'
+            );
+        }
+
+        function setField(id, value) {
+            const element = $(id);
+            if (element) element.value = value || '';
+        }
+
+        function displayUser(user) {
+            const name = user.name || user.fullName || user.full_name || user.username || 'Khách hàng MegaBuild';
+            const email = user.email || '';
+
+            $('summaryName').textContent = name;
+            $('summaryEmail').textContent = email;
+
+            setField('fullName', user.name || user.fullName || user.full_name || user.username);
+            setField('email', email);
+            setField('phone', user.phone || user.phoneNumber || user.phone_number);
+            setField('address', user.address);
+        }
+
+        function logout() {
+            if (!confirm('Bạn có chắc muốn đăng xuất?')) return;
+
+            localStorage.removeItem('megabuild_user');
+
+            // Dùng cùng khóa đăng nhập mà auth.js của dự án đang sử dụng.
+            window.location.href = '/index.html';
+        }
+
+        // Chuyển tab
+        document.querySelectorAll('[data-panel]').forEach(function (button) {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('[data-panel]').forEach(function (item) {
+                    item.classList.remove('active');
+                });
+
+                button.classList.add('active');
+
+                ['profilePanel', 'ordersPanel', 'passwordPanel'].forEach(function (id) {
+                    $(id).classList.add('hidden-panel');
+                });
+
+                $(button.dataset.panel).classList.remove('hidden-panel');
+
+                if (button.dataset.panel === 'ordersPanel') loadOrders();
+            });
+        });
+
+        $('logoutButton').addEventListener('click', logout);
+
+        // Lưu hồ sơ vào localStorage để giao diện nhớ thông tin.
+        // Muốn lưu vào database cần nối endpoint hồ sơ thực tế của backend.
+        $('profileForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const user = getUser();
+            if (!user) {
+                showMessage('profileMessage', 'Bạn chưa đăng nhập. Vui lòng đăng nhập lại.', false);
+                return;
+            }
+
+            user.name = $('fullName').value.trim();
+            user.phone = $('phone').value.trim();
+            user.address = $('address').value.trim();
+
+            localStorage.setItem('megabuild_user', JSON.stringify(user));
+            displayUser(user);
+
+            showMessage('profileMessage',
+                'Đã lưu thông tin trên trình duyệt này. Để đồng bộ database cần API cập nhật hồ sơ.',
+                true);
+        });
+
+        $('profileForm').addEventListener('reset', function () {
+            setTimeout(function () {
+                const user = getUser();
+                if (user) displayUser(user);
+            }, 0);
+        });
+
+        // Không giả vờ đổi mật khẩu khi chưa có endpoint backend.
+        $('passwordForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const current = $('currentPassword').value;
+            const next = $('newPassword').value;
+            const confirm = $('confirmPassword').value;
+
+            if (!current || !next || !confirm) {
+                showMessage('passwordMessage', 'Vui lòng nhập đầy đủ thông tin.', false);
+                return;
+            }
+
+            if (next.length < 6) {
+                showMessage('passwordMessage', 'Mật khẩu mới phải có ít nhất 6 ký tự.', false);
+                return;
+            }
+
+            if (next !== confirm) {
+                showMessage('passwordMessage', 'Mật khẩu xác nhận không khớp.', false);
+                return;
+            }
+
+            showMessage('passwordMessage',
+                'Chưa thể đổi mật khẩu: backend cần cung cấp API xác thực mật khẩu hiện tại và cập nhật mật khẩu mới.',
+                false);
+        });
+
+        // Thử gọi API đơn hàng; chỉ hiển thị dữ liệu nếu API trả về thành công.
+
+
+        async function loadOrders() {
+            const message = document.getElementById('ordersMessage');
+            const container = document.getElementById('ordersContainer');
+
+            if (!message || !container) {
+                console.error('Không tìm thấy ordersMessage hoặc ordersContainer');
+                return;
+            }
+
+            const user = getUser();
+
+            if (!user || !user.email) {
+                message.textContent = 'Vui lòng đăng nhập để xem lịch sử đơn hàng.';
+                message.classList.remove('hidden');
+                container.classList.add('hidden-panel');
+                container.innerHTML = '';
+                return;
+            }
+
+            message.textContent = 'Đang tải lịch sử đơn hàng...';
+            message.classList.remove('hidden');
+            container.classList.add('hidden-panel');
+            container.innerHTML = '';
+
+            try {
+                const apiBase = window.location.port === '8080'
+                    ? '/api'
+                    : 'http://localhost:8080/api';
+
+                const response = await fetch(
+                    `${apiBase}/orders/my?email=${encodeURIComponent(user.email)}`
+                );
+
+                const result = await response.json();
+
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Không thể tải lịch sử đơn hàng.');
+                }
+
+                const orders = Array.isArray(result.orders) ? result.orders : [];
+
+                if (orders.length === 0) {
+                    message.textContent = 'Bạn chưa có đơn hàng nào.';
+                    return;
+                }
+
+                function escapeHtml(value) {
+                    return String(value ?? '').replace(/[&<>"']/g, function (char) {
+                        const entities = {
+                            '&': '&amp;',
+                            '<': '&lt;',
+                            '>': '&gt;',
+                            '"': '&quot;',
+                            "'": '&#39;'
+                        };
+                        return entities[char];
+                    });
+                }
+
+                function formatMoney(value) {
+                    const amount = Number(value ?? 0);
+
+                    return Number.isFinite(amount)
+                        ? amount.toLocaleString('vi-VN') + ' đ'
+                        : 'Chưa xác định';
+                }
+
+                function formatDate(value) {
+                    if (!value) return 'Chưa xác định';
+
+                    const date = new Date(value);
+
+                    return Number.isNaN(date.getTime())
+                        ? escapeHtml(value)
+                        : date.toLocaleString('vi-VN');
+                }
+
+                function statusText(status) {
+                    const statuses = {
+                        PENDING: 'Chờ xác nhận',
+                        CONFIRMED: 'Đã xác nhận',
+                        SHIPPING: 'Đang giao hàng',
+                        COMPLETED: 'Hoàn thành',
+                        CANCELLED: 'Đã hủy'
+                    };
+
+                    return statuses[status] || status || 'Chưa xác định';
+                }
+
+                container.innerHTML = orders.map(function (order) {
+                    const items = Array.isArray(order.items) ? order.items : [];
+
+                    const itemsHtml = items.length
+                        ? items.map(function (item) {
+                            return `
+                        <li class="flex justify-between gap-3 py-1">
+                            <span>
+                                ${escapeHtml(item.productName || 'Sản phẩm')}
+                                × ${Number(item.quantity || 0)}
+                            </span>
+                            <span>${formatMoney(item.totalPrice)}</span>
+                        </li>
+                    `;
+                        }).join('')
+                        : '<li>Không có thông tin sản phẩm.</li>';
+
+                    return `
+                <article class="rounded-xl border border-slate-200 bg-white p-5">
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <h3 class="font-bold text-slate-900">
+                                Đơn hàng #${escapeHtml(order.id)}
+                            </h3>
+                            <p class="mt-1 text-sm text-slate-500">
+                                ${formatDate(order.createdAt)}
+                            </p>
+                        </div>
+
+                        <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">
+                            ${escapeHtml(statusText(order.status))}
+                        </span>
+                    </div>
+
+                    <ul class="mt-4 divide-y divide-slate-100 text-sm">
+                        ${itemsHtml}
+                    </ul>
+
+                    <div class="mt-4 border-t border-slate-100 pt-3 text-right">
+                        <span class="text-sm text-slate-500">Tổng tiền: </span>
+                        <strong class="text-lg text-red-600">
+                            ${formatMoney(order.totalAmount)}
+                        </strong>
+                    </div>
+                </article>
+            `;
+                }).join('');
+
+                message.classList.add('hidden');
+                container.classList.remove('hidden-panel');
+
+            } catch (error) {
+                console.error('Lỗi tải lịch sử đơn hàng:', error);
+
+                message.textContent =
+                    'Không tải được lịch sử đơn hàng: ' + error.message;
+
+                message.classList.remove('hidden');
+                container.classList.add('hidden-panel');
+            }
+        }
+
+        // Khởi tạo
+
+
+        // Khởi tạo tài khoản
+        function initAccountPage() {
+            const user = getUser();
+
+            if (!user) {
+                $('summaryName').textContent = 'Bạn chưa đăng nhập';
+                $('summaryEmail').textContent =
+                    'Vui lòng đăng nhập để quản lý tài khoản.';
+
+                const profileMessage = $('profileMessage');
+                if (profileMessage) {
+                    profileMessage.classList.remove('hidden');
+                    profileMessage.textContent =
+                        'Chưa tìm thấy thông tin đăng nhập trên trình duyệt.';
+                }
+
+                const profileForm = $('profileForm');
+                if (profileForm) {
+                    profileForm.querySelectorAll('input, textarea, button')
+                        .forEach(function (element) {
+                            if (element.type !== 'reset') {
+                                element.disabled = true;
+                            }
+                        });
+                }
+
+                const ordersMessage = $('ordersMessage');
+                if (ordersMessage) {
+                    ordersMessage.textContent =
+                        'Vui lòng đăng nhập để xem lịch sử đơn hàng.';
+                    ordersMessage.classList.remove('hidden');
+                }
+
+                return;
+            }
+
+            displayUser(user);
+            loadOrders();
+        }
+
+        // Chạy được dù script tải trước hay sau DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener(
+                'DOMContentLoaded',
+                initAccountPage,
+                { once: true }
+            );
+        } else {
+            initAccountPage();
+        }
+    })();
+</script>
+
+</body>
+</html>
