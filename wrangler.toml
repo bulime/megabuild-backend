@@ -1,0 +1,3 @@
+name = "megabuild-backend"
+main = "src/index.js"  # Hoặc đường dẫn trỏ tới file chạy chính của backend bạn
+compatibility_date = "2026-10-23"
